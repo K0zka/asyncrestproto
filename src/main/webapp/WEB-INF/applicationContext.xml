@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xmlns:cxf="http://cxf.apache.org/core"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+            http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+            http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+
+    <bean id="cacheManager" class="org.infinispan.manager.DefaultCacheManager">
+        <constructor-arg value="infinispan.xml"/>
+    </bean>
+
+    <bean id="personCache" factory-bean="cacheManager" factory-method="getCache">
+        <constructor-arg value="personCache"/>
+    </bean>
+
+    <bean id="personDao" class="com.github.k0zka.asyncrestproto.data.PersonDaoImpl">
+        <constructor-arg ref="personCache"/>
+    </bean>
+
+    <import resource="classpath:META-INF/cxf/cxf.xml" />
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+    <jaxrs:server address="/r" serviceName="r" >
+        <jaxrs:providers>
+            <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider"/>
+        </jaxrs:providers>
+        <jaxrs:serviceBeans>
+            <bean class="com.github.k0zka.asyncrestproto.rest.PersonServiceImpl">
+                <constructor-arg ref="personDao"/>
+            </bean>
+        </jaxrs:serviceBeans>
+    </jaxrs:server>
+
+
+</beans>
